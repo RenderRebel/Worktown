@@ -33,4 +33,4 @@ jobs:
             --region us-central1 \
             --platform managed \
             --allow-unauthenticated \
-            --set-secrets="FIREBASE_CREDENTIALS_JSON=firebase-credentials:latest"
+            --set-secrets="FIREBASE_CREDENTIALS=firebase-credentials:latest"
