@@ -10,16 +10,24 @@ load_dotenv()
 def initialize_firebase():
     if not firebase_admin._apps:
         try:
-            # Priority 1: JSON string from environment variable (for Render / cloud deployments)
+            # Priority 1: Render Secret File
+            render_cred_path = "/etc/secrets/serviceAccountKey.json"
+            if os.path.exists(render_cred_path):
+                cred = credentials.Certificate(render_cred_path)
+                firebase_admin.initialize_app(cred)
+                print("Firebase initialized successfully from Render secret file.")
+                return
+
+            # Priority 2: JSON string from environment variable (for Render / cloud deployments fallback)
             cred_json = os.getenv("FIREBASE_CREDENTIALS")
             if cred_json:
                 cred_dict = json.loads(cred_json)
                 cred = credentials.Certificate(cred_dict)
                 firebase_admin.initialize_app(cred)
-                print("Firebase initialized successfully from FIREBASE_CREDENTIALS_JSON.")
+                print("Firebase initialized successfully from FIREBASE_CREDENTIALS.")
                 return
 
-            # Priority 2: File path (for local development)
+            # Priority 3: File path (for local development)
             cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH", "serviceAccountKey.json")
             if os.path.exists(cred_path):
                 cred = credentials.Certificate(cred_path)

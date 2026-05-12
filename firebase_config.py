@@ -5,9 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()  # reads your .env file
 
-# This connects your backend to Firebase using your secret key
-cred_path = os.getenv("FIREBASE_CREDENTIALS", "serviceAccountKey.json")
-cred = credentials.Certificate(cred_path)
+cred = credentials.Certificate("serviceAccountKey.json")
 
 # Initialize app only if not already initialized to prevent errors
 if not firebase_admin._apps:
