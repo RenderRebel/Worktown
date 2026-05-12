@@ -11,7 +11,7 @@ def initialize_firebase():
     if not firebase_admin._apps:
         try:
             # Priority 1: JSON string from environment variable (for Render / cloud deployments)
-            cred_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
+            cred_json = os.getenv("FIREBASE_CREDENTIALS")
             if cred_json:
                 cred_dict = json.loads(cred_json)
                 cred = credentials.Certificate(cred_dict)

@@ -11,7 +11,7 @@ async def lifespan(app: FastAPI):
     yield
 security = HTTPBearer()
 
-app = FastAPI(title="NearHelp API (Merged)", lifespan=lifespan)
+app = FastAPI()
 
 # ── Root ──────────────────────────────────────────────────────────────────────
 @app.get("/")
