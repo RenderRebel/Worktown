@@ -15,5 +15,14 @@ jobs:
 
       - name: Trigger Render Deploy Hook
         run: |
-          curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
-          echo "Deploy hook triggered successfully!"
+          gcloud builds submit \
+            --tag us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/nearhelp/api:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy nearhelp-api \
+            --image us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/nearhelp/api:latest \
+            --region us-central1 \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-secrets="FIREBASE_CREDENTIALS_JSON=firebase-credentials:latest"
