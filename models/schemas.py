@@ -24,7 +24,7 @@ class UserCreate(BaseModel):
     email: Optional[str] = Field(default=None, description="Email address of the user")
     pin_code: str = Field(..., description="Pin code or zip code of the user's location")
     role: str = Field(..., description="Role of the user (e.g. worker, provider, admin)")
-    address: str = Field(..., description="Address of the user")
+    address: Optional[str] = Field(default="", description="Address of the user")
     rating: float = Field(default=0.0, ge=0.0, le=5.0, description="User rating between 0 and 5")
 
     # ── Worker-specific fields (populated when role == "worker") ──────────────

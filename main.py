@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from core.database import initialize_firebase
 from fastapi.security import HTTPBearer
 from api.routes import users, jobs, favorites, applications
-from routers import auth as auth_v2, jobs as jobs_v2, applications as apps_v2
+from routers import jobs as jobs_v2, applications as apps_v2
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -29,6 +29,6 @@ app.include_router(favorites.router)
 app.include_router(applications.router)
 
 # ── Include New NearHelp Routers ──────────────────────────────────────────────
-app.include_router(auth_v2.router)
+
 app.include_router(jobs_v2.router)
 app.include_router(apps_v2.router)

@@ -2,10 +2,30 @@ from fastapi import APIRouter, Query, Depends, HTTPException
 from typing import List, Optional
 
 from models.schemas import User, UserCreate
-from services.user_service import create_user, get_users, get_user, update_user, delete_user
+from models.worker import WorkerCreate
+from models.provider import ProviderCreate
+from services.user_service import (
+    create_user, get_users, get_user, update_user, delete_user,
+    register_worker, register_provider, get_my_profile
+)
 from core.security import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
+
+@router.post("/register/worker")
+async def register_worker_route(data: WorkerCreate, current_user: dict = Depends(get_current_user)):
+    """Register a new worker."""
+    return register_worker(data, current_user)
+
+@router.post("/register/provider")
+async def register_provider_route(data: ProviderCreate, current_user: dict = Depends(get_current_user)):
+    """Register a new service provider."""
+    return register_provider(data, current_user)
+
+@router.get("/me")
+async def get_my_profile_route(current_user: dict = Depends(get_current_user)):
+    """Get the currently authenticated user's profile."""
+    return get_my_profile(current_user)
 
 @router.post("/", response_model=User)
 async def create_user_route(user: UserCreate, current_user: dict = Depends(get_current_user)):
@@ -19,6 +39,26 @@ async def get_users_route(
 ):
     """Fetch all users, optionally filtered by pin_code and/or role."""
     return get_users(pin_code=pin_code, role=role)
+
+@router.get("/workers", response_model=List[User])
+async def get_workers_route():
+    """Fetch all workers."""
+    return get_users(role="worker")
+
+@router.get("/providers", response_model=List[User])
+async def get_providers_route():
+    """Fetch all providers."""
+    return get_users(role="provider")
+
+@router.get("/workers/{pin_code}", response_model=List[User])
+async def get_workers_by_pin_route(pin_code: str):
+    """Fetch all workers for a specific pin code."""
+    return get_users(role="worker", pin_code=pin_code)
+
+@router.get("/providers/{pin_code}", response_model=List[User])
+async def get_providers_by_pin_route(pin_code: str):
+    """Fetch all providers for a specific pin code."""
+    return get_users(role="provider", pin_code=pin_code)
 
 @router.get("/{user_id}", response_model=User)
 async def get_user_route(user_id: str, current_user: dict = Depends(get_current_user)):
