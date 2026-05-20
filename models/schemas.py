@@ -26,6 +26,7 @@ class UserCreate(BaseModel):
     role: str = Field(..., description="Role of the user (e.g. worker, provider, admin)")
     address: Optional[str] = Field(default="", description="Address of the user")
     rating: float = Field(default=0.0, ge=0.0, le=5.0, description="User rating between 0 and 5")
+    profile_image_url: Optional[str] = Field(default=None, description="URL of the user's profile image")
 
     # ── Worker-specific fields (populated when role == "worker") ──────────────
     skills: Optional[List[str]] = Field(default=None, description="List of skills (worker only)")

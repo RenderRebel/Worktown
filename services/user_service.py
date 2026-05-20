@@ -83,6 +83,7 @@ def register_worker(data, token_claims: dict) -> dict:
         "pin_code": data.pin_code,
         "skills": data.skills,
         "bio": data.bio,
+        "profile_image_url": data.profile_image_url,
         "rating": 0.0,
         "total_jobs_done": 0,
         "is_available": True,
@@ -116,6 +117,7 @@ def register_provider(data, token_claims: dict) -> dict:
         "phone": data.phone,
         "pin_code": data.pin_code,
         "address": data.address,
+        "profile_image_url": data.profile_image_url,
         "rating": 0.0,
         "total_jobs_posted": 0,
         "created_at": SERVER_TIMESTAMP
@@ -218,3 +220,21 @@ def delete_user(user_id: str) -> dict:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete user: {str(e)}")
+
+def update_profile_image(user_id: str, profile_image_url: str) -> dict:
+    try:
+        db = get_db()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    try:
+        doc_ref = db.collection(u'users').document(user_id)
+        if not doc_ref.get().exists:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        doc_ref.update({u"profile_image_url": profile_image_url})
+        return {"message": "Profile image updated successfully", "profile_image_url": profile_image_url}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update profile image: {str(e)}")

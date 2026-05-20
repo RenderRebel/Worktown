@@ -8,6 +8,7 @@ class WorkerCreate(BaseModel):
     pin_code: str
     skills: List[str] = []   # e.g. ["cleaning", "grocery"]
     bio: Optional[str] = ""
+    profile_image_url: Optional[str] = None
 
 class WorkerUpdate(BaseModel):
     name: Optional[str]
@@ -16,3 +17,4 @@ class WorkerUpdate(BaseModel):
     skills: Optional[List[str]]
     bio: Optional[str]
     is_available: Optional[bool]
+    profile_image_url: Optional[str] = None

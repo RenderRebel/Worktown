@@ -6,9 +6,13 @@ from models.worker import WorkerCreate
 from models.provider import ProviderCreate
 from services.user_service import (
     create_user, get_users, get_user, update_user, delete_user,
-    register_worker, register_provider, get_my_profile
+    register_worker, register_provider, get_my_profile, update_profile_image
 )
 from core.security import get_current_user
+from pydantic import BaseModel
+
+class ProfileImageUpdate(BaseModel):
+    profile_image_url: str
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -78,3 +82,10 @@ async def delete_user_route(user_id: str, current_user: dict = Depends(get_curre
     if user_id != current_user.get("uid"):
         raise HTTPException(status_code=403, detail="Not authorized to delete this user")
     return delete_user(user_id)
+
+@router.patch("/{user_id}/profile-image")
+async def update_profile_image_route(user_id: str, data: ProfileImageUpdate, current_user: dict = Depends(get_current_user)):
+    """Update only the profile image URL for a user."""
+    if user_id != current_user.get("uid"):
+        raise HTTPException(status_code=403, detail="Not authorized to update this user's profile image")
+    return update_profile_image(user_id, data.profile_image_url)
