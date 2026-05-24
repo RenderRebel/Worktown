@@ -18,8 +18,8 @@ class UserCreate(BaseModel):
     name: str = Field(..., description="Full name of the user")
     phone: Optional[str] = Field(
         default=None,
-        pattern=r"^\+\d{1,3}\d{10}$",
-        description="Phone number with country code followed by exactly 10 digits (e.g. +919876543210)",
+        pattern=r"^\d{10}$",
+        description="Phone number must be exactly 10 digits",
     )
     email: Optional[str] = Field(default=None, description="Email address of the user")
     pin_code: str = Field(..., description="Pin code or zip code of the user's location")
@@ -53,7 +53,7 @@ class jobCreate(BaseModel):
     description: str = Field(..., description="Detailed description of the service")
     category: str = Field(..., description="Category of the service")
     pincode: str = Field(..., min_length=4, max_length=10, description="Area pin / zip code")
-    phone_number: str = Field(..., description="Contact phone number of the provider")
+    phone_number: str = Field(..., pattern=r"^\d{10}$", description="Contact phone number of the provider (exactly 10 digits)")
     pay: float = Field(..., gt=0, description="Expected pay / rate for the service")
     status: Status = Field(default=Status.active, description="Availability status")
     posted_by: str = Field(..., description="UID or name of the user who posted this listing")
@@ -92,7 +92,7 @@ class ApplicationStatus(str, Enum):
 class ApplicationCreate(BaseModel):
     job_id:                    str               = Field(..., description="ID of the job being applied to")
     application_uid:           str               = Field(..., description="UID of the applicant (worker)")
-    applicant_phone:           str               = Field(..., description="Phone number of the applicant")
+    applicant_phone:           str               = Field(..., pattern=r"^\d{10}$", description="Phone number of the applicant (exactly 10 digits)")
     status:                    ApplicationStatus = Field(default=ApplicationStatus.pending, description="Current status of the application")
 
     # ── Live workflow flags ────────────────────────────────────────────────────

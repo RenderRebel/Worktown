@@ -2,11 +2,11 @@ from fastapi import APIRouter, Query, Depends, HTTPException
 from typing import List, Optional
 
 from models.schemas import User, UserCreate
-from models.worker import WorkerCreate
-from models.provider import ProviderCreate
+from models.worker import WorkerCreate, WorkerUpdate
+from models.provider import ProviderCreate, ProviderUpdate
 from services.user_service import (
-    create_user, get_users, get_user, update_user, delete_user,
-    register_worker, register_provider, get_my_profile, update_profile_image
+    get_users, get_user, update_user, delete_user,
+    register_worker, register_provider, switch_role, get_my_profile, update_profile_image
 )
 from core.security import get_current_user
 from pydantic import BaseModel
@@ -26,51 +26,44 @@ async def register_provider_route(data: ProviderCreate, current_user: dict = Dep
     """Register a new service provider."""
     return register_provider(data, current_user)
 
+class RoleSwitch(BaseModel):
+    target_role: str
+
+@router.post("/switch-role")
+async def switch_role_route(data: RoleSwitch, current_user: dict = Depends(get_current_user)):
+    """Switch user's active role between worker and provider."""
+    return switch_role(data.target_role, current_user)
+
 @router.get("/me")
 async def get_my_profile_route(current_user: dict = Depends(get_current_user)):
     """Get the currently authenticated user's profile."""
     return get_my_profile(current_user)
 
-@router.post("/", response_model=User)
-async def create_user_route(user: UserCreate, current_user: dict = Depends(get_current_user)):
-    """Create a new user (requires Auth)."""
-    return create_user(user, current_user)
 
-@router.get("/", response_model=List[User])
-async def get_users_route(
-    pin_code: Optional[str] = Query(None, description="Filter users by pin code"),
-    role:     Optional[str] = Query(None, description="Filter users by role (e.g. worker, provider, admin)"),
-):
-    """Fetch all users, optionally filtered by pin_code and/or role."""
-    return get_users(pin_code=pin_code, role=role)
-
-@router.get("/workers", response_model=List[User])
+@router.get("/workers")
 async def get_workers_route():
     """Fetch all workers."""
     return get_users(role="worker")
 
-@router.get("/providers", response_model=List[User])
+@router.get("/providers")
 async def get_providers_route():
     """Fetch all providers."""
     return get_users(role="provider")
 
-@router.get("/workers/{pin_code}", response_model=List[User])
+@router.get("/workers/{pin_code}")
 async def get_workers_by_pin_route(pin_code: str):
     """Fetch all workers for a specific pin code."""
     return get_users(role="worker", pin_code=pin_code)
 
-@router.get("/providers/{pin_code}", response_model=List[User])
+@router.get("/providers/{pin_code}")
 async def get_providers_by_pin_route(pin_code: str):
     """Fetch all providers for a specific pin code."""
     return get_users(role="provider", pin_code=pin_code)
 
-@router.get("/{user_id}", response_model=User)
-async def get_user_route(user_id: str, current_user: dict = Depends(get_current_user)):
-    """Get a single user by ID (requires Auth)."""
-    return get_user(user_id)
 
-@router.put("/{user_id}", response_model=User)
-async def update_user_route(user_id: str, user: UserCreate, current_user: dict = Depends(get_current_user)):
+
+@router.put("/{user_id}")
+async def update_user_route(user_id: str, user: dict, current_user: dict = Depends(get_current_user)):
     """Update an existing user by ID. You can only update your own profile."""
     if user_id != current_user.get("uid"):
         raise HTTPException(status_code=403, detail="Not authorized to update this user")
@@ -89,3 +82,8 @@ async def update_profile_image_route(user_id: str, data: ProfileImageUpdate, cur
     if user_id != current_user.get("uid"):
         raise HTTPException(status_code=403, detail="Not authorized to update this user's profile image")
     return update_profile_image(user_id, data.profile_image_url)
+
+@router.get("/{user_id}")
+async def get_user_route(user_id: str, current_user: dict = Depends(get_current_user)):
+    """Get a single user by ID (requires Auth)."""
+    return get_user(user_id)

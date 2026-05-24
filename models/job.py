@@ -6,7 +6,7 @@ class JobCreate(BaseModel):
     description: str
     category: str    # "household", "eldercare", "delivery", "other"
     pin_code: str
-    pay: str         # e.g. "₹200"
+    pay: int         # e.g. "₹200"
 
 class JobUpdate(BaseModel):
     title: Optional[str]

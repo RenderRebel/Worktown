@@ -1,10 +1,10 @@
 from fastapi import HTTPException
 from typing import List, Optional
-from models.schemas import job, jobCreate
+from models.job import JobCreate
 from core.database import get_db
 
 
-def create_job(job_data: jobCreate) -> dict:
+def create_job(job_data: JobCreate) -> dict:
     try:
         db = get_db()
     except Exception as e:
@@ -61,7 +61,7 @@ def get_job(job_id: str) -> dict:
         raise HTTPException(status_code=500, detail=f"Failed to fetch job: {str(e)}")
 
 
-def update_job(job_id: str, job_data: jobCreate) -> dict:
+def update_job(job_id: str, job_data: JobCreate) -> dict:
     try:
         db = get_db()
     except Exception as e:
