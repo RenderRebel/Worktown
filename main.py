@@ -2,8 +2,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from core.database import initialize_firebase
 from fastapi.security import HTTPBearer
-from api.routes import users, jobs, favorites, applications
-from routers import applications,jobs
+from api.routes import users, jobs, favorites, applications  # sirf yeh rakho
+
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

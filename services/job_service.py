@@ -20,9 +20,7 @@ def create_job(job_data: JobCreate) -> dict:
 
 
 def get_jobs(
-    pincode: Optional[str] = None,
-    category: Optional[str] = None,
-    status: Optional[str] = None,
+    
 ) -> List[dict]:
     try:
         db = get_db()
@@ -30,12 +28,7 @@ def get_jobs(
         raise HTTPException(status_code=500, detail=str(e))
 
     ref = db.collection(u'jobs')
-    if pincode:
-        ref = ref.where(u'pincode', u'==', pincode)
-    if category:
-        ref = ref.where(u'category', u'==', category)
-    if status:
-        ref = ref.where(u'status', u'==', status)
+    
 
     try:
         docs = ref.stream()
