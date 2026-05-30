@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import List, Optional
 from enum import Enum
 from datetime import datetime
@@ -25,6 +25,20 @@ class ApplicationStatus(str, Enum):
 class ItemType(str, Enum):
     worker   = "worker"
     provider = "provider"
+
+class JobType(str, Enum):
+    part_time = "part_time"
+    full_day  = "full_day"
+
+class PartTimeType(str, Enum):
+    one_time   = "one_time"
+    desire_day = "desire_day"
+    monthly    = "monthly"
+
+class PayBasis(str, Enum):
+    hourly  = "hourly"
+    daily   = "daily"
+    monthly = "monthly"
 
 
 # ── Worker Models ─────────────────────────────────────────────────
@@ -104,6 +118,32 @@ class JobCreate(BaseModel):
     # ───── add these two ─────
     assigned_worker_uid:   Optional[str] = None
     assigned_worker_phone: Optional[str] = None
+
+    job_type:              JobType       = Field(..., description="Job type: part_time or full_day")
+    part_time_type:        Optional[PartTimeType] = Field(default=None, description="Part-time type: one_time, desire_day, monthly")
+    hours:                 Optional[float] = Field(default=None, description="Number of hours (required if part_time and one_time)")
+    pay_basis:             Optional[PayBasis] = Field(default=None, description="Calculated payment basis: hourly, daily, monthly")
+
+    @model_validator(mode="after")
+    def validate_job_type_and_payment(self) -> "JobCreate":
+        if self.job_type == JobType.part_time:
+            if not self.part_time_type:
+                raise ValueError("part_time_type is required when job_type is part_time")
+            
+            if self.part_time_type == PartTimeType.one_time:
+                if self.hours is None or self.hours <= 0:
+                    raise ValueError("hours is required and must be greater than 0 for one_time part_time jobs")
+                self.pay_basis = PayBasis.hourly
+            elif self.part_time_type in (PartTimeType.desire_day, PartTimeType.monthly):
+                self.pay_basis = PayBasis.daily
+        elif self.job_type == JobType.full_day:
+            if self.part_time_type is not None:
+                raise ValueError("part_time_type should not be specified for full_day jobs")
+            if self.hours is not None:
+                raise ValueError("hours should not be specified for full_day jobs")
+            self.pay_basis = PayBasis.monthly
+            
+        return self
 
 class job(JobCreate):
     id: str = Field(..., description="Firestore document ID")

@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from typing import List, Optional
-from models.job import JobCreate
+from models.schemas import JobCreate
 from core.database import get_db
 
 
