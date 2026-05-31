@@ -4,6 +4,35 @@ from firebase_config import db
 from middleware.auth_middleware import verify_token
 from models.schemas import WorkerCreate, ProviderCreate, ProfileImageUpdate, RoleSwitch
 from google.cloud.firestore_v1 import SERVER_TIMESTAMP
+import cloudinary
+import cloudinary.uploader
+import os
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
+
+def delete_old_cloudinary_image(image_url: str):
+    if not image_url or "res.cloudinary.com" not in image_url:
+        return
+    try:
+        parts = image_url.split("/upload/")
+        if len(parts) < 2:
+            return
+        path_part = parts[1]
+        subparts = path_part.split("/")
+        if len(subparts) > 0 and subparts[0].startswith("v") and subparts[0][1:].isdigit():
+            subparts = subparts[1:]
+        public_id = "/".join(subparts)
+        if "." in public_id:
+            public_id = public_id.rsplit(".", 1)[0]
+        
+        cloudinary.uploader.destroy(public_id)
+    except Exception as e:
+        print(f"Failed to delete old Cloudinary image: {e}")
 
 
 
@@ -253,7 +282,15 @@ async def update_profile_image(user_id: str, data: ProfileImageUpdate, uid: str 
     if user_id != uid:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    db.collection("users").document(uid).update({
+    user_ref = db.collection("users").document(uid)
+    user_doc = user_ref.get()
+    if user_doc.exists:
+        current_data = user_doc.to_dict()
+        old_image_url = current_data.get("profile_image_url")
+        if old_image_url:
+            delete_old_cloudinary_image(old_image_url)
+
+    user_ref.update({
         "profile_image_url": data.profile_image_url
     })
     return {"message": "Profile image updated"}

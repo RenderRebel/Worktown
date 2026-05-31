@@ -28,17 +28,7 @@ class ItemType(str, Enum):
 
 class JobType(str, Enum):
     part_time = "part_time"
-    full_day  = "full_day"
-
-class PartTimeType(str, Enum):
-    one_time   = "one_time"
-    desire_day = "desire_day"
-    monthly    = "monthly"
-
-class PayBasis(str, Enum):
-    hourly  = "hourly"
-    daily   = "daily"
-    monthly = "monthly"
+    full_time = "full_time"
 
 
 # ── Worker Models ─────────────────────────────────────────────────
@@ -119,45 +109,14 @@ class JobCreate(BaseModel):
     assigned_worker_uid:   Optional[str] = None
     assigned_worker_phone: Optional[str] = None
 
-    job_type:              JobType       = Field(..., description="Job type: part_time or full_day")
-    part_time_type:        Optional[PartTimeType] = Field(default=None, description="Part-time type: one_time, desire_day, monthly")
-    hours:                 Optional[float] = Field(default=None, description="Number of hours (required if part_time and one_time)")
-    pay_basis:             Optional[PayBasis] = Field(default=None, description="Calculated payment basis: hourly, daily, monthly")
-
-    @model_validator(mode="after")
-    def validate_job_type_and_payment(self) -> "JobCreate":
-        if self.job_type == JobType.part_time:
-            if not self.part_time_type:
-                raise ValueError("part_time_type is required when job_type is part_time")
-            
-            if self.part_time_type == PartTimeType.one_time:
-                if self.hours is None or self.hours <= 0:
-                    raise ValueError("hours is required and must be greater than 0 for one_time part_time jobs")
-                self.pay_basis = PayBasis.hourly
-            elif self.part_time_type in (PartTimeType.desire_day, PartTimeType.monthly):
-                self.pay_basis = PayBasis.daily
-        elif self.job_type == JobType.full_day:
-            if self.part_time_type is not None:
-                raise ValueError("part_time_type should not be specified for full_day jobs")
-            if self.hours is not None:
-                raise ValueError("hours should not be specified for full_day jobs")
-            self.pay_basis = PayBasis.monthly
-            
-        return self
+    job_type:              JobType       = Field(..., description="Job type: part_time or full_time")
+    title_hi:              Optional[str] = Field(default=None, description="Job title in Hindi")
+    description_hi:        Optional[str] = Field(default=None, description="Job description in Hindi")
 
 class job(JobCreate):
     id: str = Field(..., description="Firestore document ID")
 
 
-# ── Favorite Models ───────────────────────────────────────────────
-
-class FavoriteCreate(BaseModel):
-    user_id:   str      = Field(..., description="UID of user who saved")
-    item_type: ItemType = Field(..., description="worker or provider")
-    item_id:   str      = Field(..., description="ID of saved item")
-
-class Favorite(FavoriteCreate):
-    id: str = Field(..., description="Firestore document ID")
 
 
 # ── Application Models ────────────────────────────────────────────
@@ -251,21 +210,6 @@ class RoleSwitch(BaseModel):
 
 # class job(jobCreate):
 #     id: str = Field(..., description="Unique Firestore document ID")
-
-
-# # ── Favorites ─────────────────────────────────────────────────────────────────
-
-# class ItemType(str, Enum):
-#     worker   = "worker"
-#     provider = "provider"
-
-# class FavoriteCreate(BaseModel):
-#     user_id:   str      = Field(..., description="UID of the user who saved this favourite")
-#     item_type: ItemType = Field(..., description="Type of item: 'worker' or 'provider'")
-#     item_id:   str      = Field(..., description="Firestore document ID of the saved item")
-
-# class Favorite(FavoriteCreate):
-#     id: str = Field(..., description="Unique Firestore document ID of the favourite entry")
 
 
 # # ── Application Enums ─────────────────────────────────────────────────────────
