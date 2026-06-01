@@ -63,6 +63,7 @@ async def post_job(data: JobCreate, uid: str = Depends(get_current_user)):
         "pin_code":              data.pin_code,
         "pay":                   data.pay,
         "job_type":              data.job_type,
+        "is_urgent":             data.is_urgent,
         "status":                "open",
         "assigned_worker_uid":   None,
         "assigned_worker_phone": None,

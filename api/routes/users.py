@@ -274,6 +274,28 @@ async def update_user(user_id: str, data: dict, uid: str = Depends(get_current_u
     return {"message": "Profile updated"}
 
 
+# ── Update Profile Image (Direct / No Auth Check) ─────────────────
+@router.patch("/{uid}/profile-image")
+async def update_profile_image_direct(uid: str, data: ProfileImageUpdate):
+    """
+    Update profile image URL directly with Firestore existence check and URL validation.
+    """
+    user_ref = db.collection("users").document(uid)
+    user_doc = user_ref.get()
+    if not user_doc.exists:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not data.profile_image_url.startswith("https://res.cloudinary.com/"):
+        raise HTTPException(status_code=400, detail="Profile image URL must start with https://res.cloudinary.com/")
+
+    user_ref.update({
+        "profile_image_url": data.profile_image_url
+    })
+
+    updated_doc = user_ref.get()
+    return updated_doc.to_dict()
+
+
 # ── Update Profile Image ──────────────────────────────────────────
 @router.patch("/{user_id}/profile-image")
 async def update_profile_image(user_id: str, data: ProfileImageUpdate, uid: str = Depends(get_current_user)):

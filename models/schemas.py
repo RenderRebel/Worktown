@@ -112,6 +112,7 @@ class JobCreate(BaseModel):
     job_type:              JobType       = Field(..., description="Job type: part_time or full_time")
     title_hi:              Optional[str] = Field(default=None, description="Job title in Hindi")
     description_hi:        Optional[str] = Field(default=None, description="Job description in Hindi")
+    is_urgent:             bool          = Field(default=False, description="Whether the job is urgent")
 
 class job(JobCreate):
     id: str = Field(..., description="Firestore document ID")

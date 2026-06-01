@@ -40,3 +40,35 @@ def test_invalid_job_type():
     with pytest.raises(ValidationError) as exc_info:
         JobCreate(**data)
     assert "Input should be 'part_time' or 'full_time'" in str(exc_info.value)
+
+
+def test_job_is_urgent_default():
+    """Verify that is_urgent defaults to False when not provided."""
+    data = {
+        **VALID_BASE_DATA,
+        "job_type": "part_time"
+    }
+    job = JobCreate(**data)
+    assert job.is_urgent is False
+
+
+def test_job_is_urgent_explicit_true():
+    """Verify that is_urgent can be explicitly set to True."""
+    data = {
+        **VALID_BASE_DATA,
+        "job_type": "part_time",
+        "is_urgent": True
+    }
+    job = JobCreate(**data)
+    assert job.is_urgent is True
+
+
+def test_job_is_urgent_explicit_false():
+    """Verify that is_urgent can be explicitly set to False."""
+    data = {
+        **VALID_BASE_DATA,
+        "job_type": "part_time",
+        "is_urgent": False
+    }
+    job = JobCreate(**data)
+    assert job.is_urgent is False
