@@ -102,6 +102,7 @@ class JobCreate(BaseModel):
     description: str           = Field(..., description="Job description")
     category:    str           = Field(..., description="Job category")
     pin_code:    str           = Field(..., description="Area pin code")
+    address:     Optional[str] = Field(default=None, description="Full job address")
     pay:         float         = Field(..., gt=0, description="Pay amount")
     posted_by:   Optional[str] = Field(default=None, description="UID of poster")
 
@@ -150,6 +151,25 @@ class ProfileImageUpdate(BaseModel):
 
 class RoleSwitch(BaseModel):
     target_role: str  # "worker" or "provider"
+
+
+# ── Rating & Review Models ────────────────────────────────────────
+
+class RatingCreate(BaseModel):
+    app_id:  str           = Field(..., description="Application ID for which the review is being submitted")
+    rating:  float         = Field(..., ge=1.0, le=5.0, description="Star rating between 1.0 and 5.0")
+    comment: Optional[str] = Field(default=None, max_length=1000, description="Optional written comment")
+
+class ReviewResponse(BaseModel):
+    review_id:     str
+    app_id:        str
+    job_id:        str
+    reviewer_uid:  str
+    reviewer_role: str            # "worker" or "provider"
+    target_uid:    str
+    rating:        float
+    comment:       Optional[str]
+    created_at:    Optional[datetime]
 # from typing import List, Optional
 # from enum import Enum
 # from datetime import datetime

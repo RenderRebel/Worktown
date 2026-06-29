@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response
 from core.database import initialize_firebase
 from fastapi.security import HTTPBearer
-from api.routes import users, jobs,  applications  # sirf yeh rakho
+from api.routes import users, jobs, applications, reviews  # sirf yeh rakho
 import json
 from utils.translation import translate_fields_recursively
 
@@ -61,8 +61,8 @@ def health():
 # ── Include Routers ───────────────────────────────────────────────────────────
 app.include_router(users.router)
 app.include_router(jobs.router)
-
 app.include_router(applications.router)
+app.include_router(reviews.router)
 
 # ── Include New NearHelp Routers ──────────────────────────────────────────────
 

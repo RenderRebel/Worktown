@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
 from firebase_config import db
-from middleware.auth_middleware import verify_token
+from middleware.auth_middleware import verify_token, UserIdentity
 from models.schemas import JobCreate
 from services.job_service import get_jobs, get_job, update_job, delete_job
 from google.cloud.firestore_v1 import SERVER_TIMESTAMP
@@ -14,9 +14,16 @@ security = HTTPBearer()
 
 
 # ── Helper: Bearer token se uid lo ───────────────────────────────
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> UserIdentity:
     token = credentials.credentials
-    uid = await verify_token(token)
+    user_identity = await verify_token(token)
+    return user_identity
+
+
+# ── Guard: requires verified email, raises 403 if not ────────────
+def require_verified_email(uid: UserIdentity = Depends(get_current_user)) -> UserIdentity:
+    if not uid.email_verified:
+        raise HTTPException(status_code=403, detail="Email verification required")
     return uid
 
 
@@ -40,7 +47,7 @@ def translate_job_dict(job_data: dict, lang: Optional[str] = None) -> dict:
 
 # ── Post a Job (Provider only) ───────────────────────────────────
 @router.post("/")
-async def post_job(data: JobCreate, uid: str = Depends(get_current_user)):
+async def post_job(data: JobCreate, uid: UserIdentity = Depends(require_verified_email)):
     """Create a new job listing. Only providers can post jobs."""
 
     user_data = get_user_or_404(uid)

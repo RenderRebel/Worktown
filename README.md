@@ -115,14 +115,14 @@ For local testing without the Flutter frontend, you can use the provided script 
 ### As a Provider
 1. Register Profile (`POST /auth/register/provider`)
 2. Post a Job (`POST /jobs/`)
-3. Approve an Application (`PATCH /applications-v2/{app_id}/approve`)
-4. Confirm Worker Arrival (`PATCH /applications-v2/{app_id}/confirm-arrival`)
-5. Confirm Job Completion (`PATCH /applications-v2/{app_id}/confirm-done`)
+3. Approve an Application (`PATCH /applications/{app_id}/approve`)
+4. Confirm Worker Arrival (`PATCH /applications/{app_id}/confirm-arrival`)
+5. Confirm Job Completion (`PATCH /applications/{app_id}/confirm-done`)
 
 ### As a Worker
 1. Register Profile (`POST /auth/register/worker`)
 2. Browse Open Jobs (`GET /jobs/pincode/{pin_code}`)
-3. Apply for a Job (`POST /applications-v2/`)
-4. Cancel an Application (`PATCH /applications-v2/{app_id}/cancel`)
-5. Signal Arrival (`PATCH /applications-v2/{app_id}/worker-arriving`)
-6. Mark Job as Done (`PATCH /applications-v2/{app_id}/worker-done`)
+3. Apply for a Job (`POST /applications/`)
+4. Cancel an Application (`PATCH /applications/{app_id}/cancel`)
+5. Signal Arrival (`PATCH /applications/{app_id}/worker-arriving`)
+6. Mark Job as Done (`PATCH /applications/{app_id}/worker-done`)

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import List, Optional
 from firebase_config import db
-from middleware.auth_middleware import verify_token
+from middleware.auth_middleware import verify_token, UserIdentity
 from models.schemas import ApplicationCreate, Application
 from services.application_service import get_applications, get_application, update_application, delete_application
 from google.cloud.firestore_v1 import SERVER_TIMESTAMP
@@ -13,9 +13,16 @@ security = HTTPBearer()
 
 
 # ── Helper: Bearer token se uid lo ───────────────────────────────
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> UserIdentity:
     token = credentials.credentials
-    uid = await verify_token(token)
+    user_identity = await verify_token(token)
+    return user_identity
+
+
+# ── Guard: requires verified email, raises 403 if not ────────────
+def require_verified_email(uid: UserIdentity = Depends(get_current_user)) -> UserIdentity:
+    if not uid.email_verified:
+        raise HTTPException(status_code=403, detail="Email verification required")
     return uid
 
 
@@ -29,7 +36,7 @@ def get_user_or_404(uid: str) -> dict:
 
 # ── Submit Application (Worker only) ─────────────────────────────
 @router.post("/")
-async def apply_for_job(data: ApplicationCreate, uid: str = Depends(get_current_user)):
+async def apply_for_job(data: ApplicationCreate, uid: UserIdentity = Depends(require_verified_email)):
     """Submit a new job application. Only workers can apply."""
 
     user_data = get_user_or_404(uid)
@@ -234,6 +241,13 @@ async def confirm_done(app_id: str, uid: str = Depends(get_current_user)):
 
     app_ref.update({"provider_confirmed_done": True})
     job_ref.update({"status": "completed"})
+
+    # Initialize rating flags — both parties can now rate each other
+    app_ref.update({
+        "provider_rated_worker": False,
+        "worker_rated_provider": False,
+    })
+
     return {"message": "Job completed! Both can now rate each other ⭐"}
 
 
