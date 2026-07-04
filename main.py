@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response
 from core.database import initialize_firebase
 from fastapi.security import HTTPBearer
-from api.routes import users, jobs, applications, reviews  # sirf yeh rakho
+from api.routes import users, jobs, applications, reviews, otp  # sirf yeh rakho
 import json
 from utils.translation import translate_fields_recursively
 
@@ -65,4 +65,4 @@ app.include_router(applications.router)
 app.include_router(reviews.router)
 
 # ── Include New NearHelp Routers ──────────────────────────────────────────────
-
+app.include_router(otp.router)
